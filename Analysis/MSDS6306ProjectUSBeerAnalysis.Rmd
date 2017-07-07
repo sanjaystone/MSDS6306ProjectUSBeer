@@ -1,0 +1,272 @@
+---
+title: "MSDS630 1PROJECT US BEER ANALYSIS"
+author: "Sanjay Kalluvilayil"
+date: "July 3, 2017"
+output:
+  html_document:
+    keep_md: TRUE
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Introduction
+The goal of this project is to assess the relationship between Alcohol Content by Volume (ABV) and  International Bitterness Units (IBU) in US beers.  An initial examination of two separate data      sets that contain beer and brewery data was conducted. These data sets were combined to enable the   analysis of beer data and metrics across the 50 states plus Washington, DC in the United States of  America.  The resulting conclusion is that there is a positive linear relationship with a           Pearson's correlation of 0.67 between Alcohol Content by Volume (ABV) and International             Bitterness Units (IBU) in US beers.
+
+
+## Important
+  * This data resides in the github directory
+    https://github.com/sanjaystone/MSDS6306ProjectUSBeer.git
+  * The deliverable includes the R Markdown file, Markdown file, and all relevant data sets 
+  
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button, a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+# Preparing the R Workspace
+### R Workspace
+The first step is preparing the R Workspace for use. The environment may be still filled with data and values, so we will use rm(list=ls()) to clear the workspace and clear it of any previous code.
+
+### Installing & Loading Packages
+Several packages will need to be installed and loaded to be able to conduct the full analysis.
+
+### Session Info
+This captures the session info for tracking purposes.
+
+```{r}
+rm(list=ls())
+library(repmis)
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+sessionInfo()
+```
+## Setting the Working Directories & Creating Sub Directories
+To identify the current working directory, we used getwd().  To change the working directory, I used setwd("C:/RDATA") to the path specified path in the parenthesis. Sub-directories of folders were created to store Analysis and Data files.
+### Git
+In git, we opened the Git shell and cloned the Github repository. We ensured the initial working directory was set via  $ cd c:/RDATA.  We copied the Github repository by cloning the project via:  
+git clone https://github.com/sanjaystone/MSDS6306ProjectUSBeer.git.  In addition, we created the Analysis folder with the Data as a sub-folder of the Analysis folder.
+
+```{r}
+getwd()
+dir.create ("/Analysis")
+dir.create ("/Analysis/Data")
+```
+
+# CREATING README.md FILE
+
+```{r}
+file.create("README.md")
+cat("The of this project purpose is conduct an analysis of US Beer and Brewery data.
+    
+    INTRODUCTION
+    The goal of this project is to assess the relationship between Alcohol Content by Volume (ABV)
+    and International Bitterness Units (IBU) in US beers.  An initial examination of two separate
+    data sets that contain beer and brewery data are conducted. These data sets are combined to
+    enable the analysis of beer data and metrics across the 50 states plus Washington, DC in the
+    United States of America.  The resulting conclusion is that there is a positive linear
+    relationship with a Pearson's correlation of 0.67 between Alcohol Content by Volume (ABV) and
+    International Bitterness Units (IBU) in US beers.
+
+    The data we will analyze are 2 datasets: 
+    1. Beer and 
+    2. Breweries
+    
+    The datasets descriptions are as follows.
+    
+    The first data set, Beers, contains a list of 2410 US craft beers
+    The source data file is CSV formatted file, beers.csv
+    Name: Name of the beer.
+    Beer ID: Unique identifier of the beer.
+    ABV: Alcohol by volume of the beer.
+    IBU: International Bitterness Units of the beer.
+    Brewery ID: Brewery id associated with the beer.
+    Style: Style of the beer.
+    Ounces: Ounces of beer
+
+    The second data set, Breweries, contains 558 US breweries.
+    The source data file is a CSV formatted file, breweries.csv. 
+    Brew ID: Unique identifier of the brewery.
+    Name: Name of the brewery.
+    City: City where the brewery is located.
+    State: State where the brewery is located.
+    
+    The data sets will be merged,
+    The Key Questions we will address and answer include:
+    1. How many breweries are present in each state?
+    2. Merge beer data with breweries data by brewery id. Print first 6 observations and the
+       last six observations to check the merged file.
+    3. Report the number of NA's in each column.
+    4. Compute the median alcohol content and international bitterness unit for each state. Plot
+       a bar chart to compare.
+    5. Which state has the maximum alcoholic beer? Which state has the most bitter beer?
+    6. Summary statistics for ABV (Alcohol by volume) variable.
+    7. Is there a relationship between the bitterness of the beer and its alcoholic content? 
+       Draw a scatter plot. ", file="README.md")
+    
+    cat(
+    "CONCLUSION
+    There is a correlation between International Bitterness Units (IBU) and Alcohol by Volume (ABV)
+    The Pearson's R Correlation was run on the full data set and the clean data set.
+    The correlation result is 0.67, a moderate linear relationship.
+    The 95% confidence interval is .64 to .69.", file="README.md", append=T)
+```
+    ## Preparing the Data
+      The files have been stored on the github site as.csv files.  The RAW URLs are provided the
+      datasets will be loaded into R.
+```{r}
+breweryURL<- 'https://raw.githubusercontent.com/sanjaystone/MSDS6306ProjectUSBeer/master/Analysis/Data/Breweries.csv'
+beersURL <- 'https://raw.githubusercontent.com/sanjaystone/MSDS6306ProjectUSBeer/master/Analysis/Data/Beers.csv'
+breweries <- read.csv(breweryURL, header=T)
+beers <- read.csv(beersURL, header=T)
+```
+
+## Viewing the Data
+We will load and run summary statistics on the dataset to ensure it was imported propery.
+Using Dim, we can see the Breweries data set, which contains 558 rows or US breweries.
+The dataset contains 4 columns: Brewery ID, Brewery Name, City, and State.
+We can also summarize the data set.
+```{r}
+getwd()
+dim(breweries)
+head(breweries)
+tail(breweries)
+names(breweries)
+str(breweries)
+summary(breweries)
+```
+We will load and run summary statistics on the dataset to ensure it was imported properly.
+Using Dim, we can see the the Breweries data set, which contains a list of 2410 US craft beers.
+The dataset contains 7 columns: Name, Beer_ID, ABV, IBU, Brewery ID, Style, and Ounces.
+```{r}
+dim(beers)
+head(beers)
+tail(beers)
+names(beers)
+summary(beers)
+```
+
+## 1. How many breweries are present in each state?
+To answer the question, we ordered the data set by State.  We created a vector to summarize the State column. We summarized the counts (Min, Max, etc.).   The max is 47 (Colorado) and min is 1 (North Dakota), while the median is 7 breweries. We printed out the results by state.
+
+```{r}
+BrewerybyState <- breweries[order(breweries$`State`),]
+View(BrewerybyState)
+StateCount <-summary(BrewerybyState$State)
+summary(StateCount)
+StateCount
+```
+
+## 2. Merge beer data with breweries data by brewery id.Print first 6 observations and the last six
+Prior to merging the files, we cleaned up the names of the columns to be a bit more clear and human readable We also double-checked to make sure Brewery ID is consistent across both data sets.
+
+```{r}
+names (beers) [1] <- "Beer Name"
+names (beers) [5] <- "Brewery ID"
+names (breweries) [1] <- "Brewery ID"
+names (breweries) [2] <- "Brewery Name"
+BeerBreweryData <- merge(x=beers, y=breweries, by="Brewery ID", all=TRUE) 
+View(BeerBreweryData )
+head(BeerBreweryData)
+tail(BeerBreweryData)
+```
+
+# 3. Report the number of NA's in each column.
+We calculated the number of NA's by each column or by column sums as a double-check.
+ABV has 62 & IBU has 1005 NA's. From the visual check, we know Style has a couple of blanks(""s). We replaced the blanks(""s) with NA. Now Style has 5 NA's.
+
+```{r}
+IBU <- (is.na(BeerBreweryData$IBU))
+summary(IBU)
+any(is.na(BeerBreweryData$ABV))
+sum(is.na(BeerBreweryData$IBU))
+sum(is.na(BeerBreweryData$'Brewery ID'))
+sum(is.na(BeerBreweryData$'Beer Name'))
+sum(is.na(BeerBreweryData$ABV))
+sum(is.na(BeerBreweryData$IBU))
+sum(is.na(BeerBreweryData$Style))
+sum(is.na(BeerBreweryData$Ounces))
+sum(is.na(BeerBreweryData$'Brewery Name'))
+sum(is.na(BeerBreweryData$City))
+sum(is.na(BeerBreweryData$State)) 
+colSums(is.na(BeerBreweryData))
+BeerBreweryData[BeerBreweryData==""] <- NA
+colSums(is.na(BeerBreweryData))
+```
+
+
+## 4. Compute the median alcohol content and international bitterness unit for each state.
+From a visual perspective, we ordered the data using the arrange from the plyr package.
+We created a clean data set that removed all the NA's from the data set since this would affect
+the median calculation and the plotting of the values. Next, the median for ABV by State was calculated using the aggregate function.
+
+##    Plot a bar chart to compare.
+The bar chart was created using the ggplot from the ggplot2 package. From the ABV chart, Maine and West Virginia have the highest median Alcohol by Volume. Utah has the lowest median Alcohol by Volume (ABV) which should not be too surprising. From the IBU chart, it seems that Maine and West Virginia have the highest median values for International Bitterness Units (IBU). Wisconsin has the lowest median value for International Bitterness Units (IBU)
+
+```{r}
+library(plyr)
+library(ggplot2)
+ABVbyState<-arrange(BeerBreweryData, State, ABV)
+CleanABVbyState<-na.omit(ABVbyState)
+View(CleanABVbyState)
+any(is.na(CleanABVbyState))
+MedianABVbyState <- aggregate(ABV~State, data=CleanABVbyState, FUN=median)
+MedianABVbyState
+ggplot(data=MedianABVbyState, aes(x = State, y = ABV))+ geom_bar(stat='identity', fill="blue")
+
+MedianIBUbyState <- aggregate(IBU~State, data=CleanABVbyState, FUN=median)
+MedianIBUbyState
+ggplot(data=MedianIBUbyState, aes(x = State, y = IBU))+ geom_bar(stat='identity', fill="red")
+
+```
+
+## 5. Which state has the maximum alcoholic beer? Which state has the most bitter beer?
+Colorado is the state with the highest Alcohol by Volume (ABV) of 0.128, although it was not on
+of the top 2 states with the highest median Alcohol by Volume (ABV.
+
+Oregon is the state with the highest International Bitterness Units (IBU) of 138, although it was not on one of the top 2 states with the highest International Bitterness Units (IBU)
+
+```{r}
+ABVbyState[which.max(ABVbyState$ABV),]$ABV
+ABVbyState[which.max(ABVbyState$ABV),]$State
+ 
+ABVbyState[which.max(ABVbyState$IBU),]$IBU
+ABVbyState[which.max(ABVbyState$IBU),]$State
+
+```
+##   6. Summary statistics for ABV (Alcohol by Volume) variable.
+The summary for ABV (Alcohol by Volume) generates a report that indicates the Max is 0.128 and the Min is 0.001.  The median value of 0.0556 and mean of 0.05977. If we run the clean data w/o the N/As the values change to a median value of 0.05700 and a mean of 0.05992.  This shows the importance of cleaning the data.
+
+```{r}
+summary(ABVbyState$ABV)
+summary(CleanABVbyState$ABV)
+```
+## 7. Is there a relationship between the bitterness of the beer and its alcoholic content? Draw a          scatter plot.
+The ggplot function was used to create the scatterplot to create a visual representation of the correlation between the two variables, or the relationship between International Bitterness Units (IBU) and Alcohol by Volume (ABV). The x-axis is Alcohol by Volume (ABV), the y-axis is International Bitterness Units (IBU), and a regression line was added to the plot. Based on the plot, there seems to be a linear relationship between the variables.
+
+```{r}
+
+ggplot(data=ABVbyState, aes(x = ABV, y = IBU))+ geom_point(shape=1, alpha=3/4, col="blue")+geom_smooth(method=lm, col="red")
+ggplot(data=CleanABVbyState, aes(x = ABV, y = IBU))+ geom_point(shape=1, col="blue")+geom_smooth(method=lm, col="red")
+```
+## Correlation Discussion
+
+The Pearson's Correlation was run on the full data set and the clean data set to assess the correlation between International Bitterness Units (IBU) and Alcohol by Volume (ABV). Pearson's correlation is a measure of the linear correlation between two variables X and Y. It has a value between +1 and −1, where 1 is total positive linear correlation, 0 is no linear correlation, and −1 is total negative linear correlation.  The correlation result is 0.67, a moderate linear relationship. The 95% confidence interval is .64 to .69.
+
+```{r}
+
+correlation <- cor.test(ABVbyState$ABV, ABVbyState$IBU, method="pearson")
+correlation
+correlation2 <- cor.test(CleanABVbyState$ABV, CleanABVbyState$IBU, method="pearson")
+correlation2
+```
+# Conclusion
+The is a correlation between International Bitterness Units (IBU) and Alcohol by Volume (ABV). The Pearson's R Correlation was run on the full data set and the clean data set. The correlation result is 0.67, indicating a moderate linear relationship. The 95% confidence interval is .64 to .69.
+
+
+
+
